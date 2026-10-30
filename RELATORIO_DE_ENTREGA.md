@@ -40,7 +40,9 @@ Python 3.11+, FastAPI, SQLAlchemy, SQLite, Jinja2, HTTPX, pytest, python-dotenv,
 - `python -m pytest -q`: **47 testes aprovados**.
 - `python -m compileall -q app scripts tests`: compilação concluída sem erros.
 - Smoke test com `TestClient` em `/`, `/clientes`, `/clientes/10001`, `/cronograma`, `/historico`, `/configuracoes`, `/docs`, `/health`, `/api/indicadores`: **todos retornaram HTTP 200**.
-- Testes HTTP externos foram simulados com mocks. **Não foi possível executar uma importação ao vivo** do DummyJSON neste ambiente, por indisponibilidade de acesso de rede de saída.
+- Extração ao vivo do DummyJSON: **208 clientes e 208 carrinhos**, com paginação completa; os IDs vão de 1 a 208 em cada fonte. A consolidação gravou 208 clientes e 208 carrinhos no SQLite, classificou todos os clientes e registrou a execução. Os arquivos brutos ficaram em `data/raw/`, pasta ignorada pelo Git. As quantidades dos produtos somam 2.417 unidades.
+- Homologação no navegador: as oito páginas principais (`/`, `/clientes`, `/clientes/1`, `/cronograma`, `/historico`, `/historico/1`, `/configuracoes` e `/docs`) retornaram HTTP 200 em viewport desktop e mobile, sem overflow horizontal. Busca/filtro de clientes e filtro de cronograma foram exercitados; formulários de aprovação e simulação e seus tokens CSRF foram conferidos. A simulação não foi submetida nesta revisão porque não havia mensagens pendentes para hoje.
+- Testes HTTP automatizados continuam usando mocks; somente a extração foi executada contra a API pública real. Nenhum envio à Botmaker foi executado.
 
 ## 6. Como iniciar
 
@@ -55,12 +57,12 @@ python -m uvicorn app.main:app --reload
 
 Abra `http://127.0.0.1:8000`. O README contém instruções de instalação para Windows, Linux e Docker.
 
-## 7. O que falta para concluir literalmente 100% da especificação
+## 7. Limitações e próximos passos (fora do escopo do teste)
 
-1. **Importação ao vivo:** repetir a execução manual de extração com acesso à internet no computador do avaliador.
-2. **Homologação no navegador:** as telas principais têm capturas reais; ainda é recomendada uma revisão interativa completa dos fluxos.
+- O envio real à Botmaker permanece desabilitado, conforme o requisito de simulação. O contrato HTTP está documentado e a requisição que seria enviada é registrada sem credenciais.
+- Não há login de operadores. A aplicação é para uso local em avaliação; antes de hospedá-la publicamente, implemente autenticação, autorização, HTTPS, auditoria e proteção contra excesso de requisições.
 
-**Observação:** a aplicação não implementa login de operadores. Foi construída para uso local em teste; antes de hospedá-la publicamente, implementar autenticação, autorização, HTTPS, auditoria e proteção de rate limits.
+As validações funcionais pendentes de extração ao vivo e revisão visual foram concluídas; detalhes e evidências estão nas issues encerradas do repositório.
 
 ## 8. Checklist de atendimento
 
@@ -68,9 +70,9 @@ Abra `http://127.0.0.1:8000`. O README contém instruções de instalação para
 | --- | --- |
 | Estrutura Python/FastAPI/SQLAlchemy/SQLite | Implementado |
 | Interface administrativa em português | Implementado |
-| Extração paginada completa | Implementado e testado com mocks |
-| Backup bruto JSON com timestamps únicos | Implementado e testado |
-| Consolidação de carrinhos e clientes | Implementado e testado |
+| Extração paginada completa | Implementado, testado com mocks e validado ao vivo (208 clientes e 208 carrinhos) |
+| Backup bruto JSON com timestamps únicos | Implementado, testado e validado; arquivos locais ignorados pelo Git |
+| Consolidação de carrinhos e clientes | Implementado, testado e validado ao vivo no SQLite |
 | Classificação com prioridade e múltiplas trilhas | Implementado e testado |
 | Aprovação manual e persistência | Implementado e testado |
 | Cronograma sequencial de três mensagens | Implementado e testado |
@@ -80,5 +82,6 @@ Abra `http://127.0.0.1:8000`. O README contém instruções de instalação para
 | Histórico técnico e token oculto | Implementado e testado |
 | Dashboard com dados do banco | Implementado e testado |
 | Testes automatizados | 47 aprovados |
+| Homologação das páginas principais em desktop e mobile | Validada no navegador; sem overflow horizontal |
 | Docker, configuração local opcional por .env, CI e README | Implementado |
 | Repositório GitHub publicado | https://github.com/Kakykyyy/campaignflow |
