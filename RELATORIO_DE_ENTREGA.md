@@ -20,7 +20,7 @@
 
 ## 2. Estrutura final
 
-`app/` (models, routers, services, templates, static); `tests/`; `scripts/`; `data/raw/`; `.github/workflows/`; `README.md`; `requirements.txt`; `.env.example`; `.gitignore`; `Dockerfile`; `docker-compose.yml`.
+`app/` (models, routers, services, templates, static); `tests/`; `scripts/`; `data/raw/`; `.github/workflows/`; `README.md`; `requirements.txt`; `.gitignore`; `Dockerfile`; `docker-compose.yml`.
 
 ## 3. Tecnologias
 
@@ -81,5 +81,5 @@ Abra `http://127.0.0.1:8000`. O README contém instruções de instalação para
 | Histórico técnico e token oculto | Implementado e testado |
 | Dashboard com dados do banco | Implementado e testado |
 | Testes automatizados | 45 aprovados |
-| Docker, .env.example, CI e README | Implementado |
+| Docker, configuração local opcional por .env, CI e README | Implementado |
 | Repositório GitHub publicado | https://github.com/Kakykyyy/campaignflow |

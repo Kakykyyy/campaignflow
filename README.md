@@ -46,7 +46,6 @@ campaignflow/
 ├── scripts/seed_demo.py                # Exemplo local opcional
 ├── data/raw/.gitkeep                   # JSONs gerados são ignorados pelo Git
 ├── .github/workflows/test.yml
-├── .env.example
 ├── .gitignore
 ├── Dockerfile
 ├── docker-compose.yml
@@ -65,7 +64,6 @@ cd campaignflow
 py -3 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
-Copy-Item .env.example .env
 python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
@@ -80,7 +78,6 @@ cd campaignflow
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
-cp .env.example .env
 python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
@@ -102,7 +99,7 @@ Acesse **http://127.0.0.1:8000**. Em Docker, o servidor está publicado para o h
 | `WHATSAPP_API_TOKEN` | Token da API Botmaker. **Não é utilizado para envios nem salvo em histórico**. Pode ficar vazio. |
 | `BOTMAKER_CHANNEL_ID` | ID de canal da conta Botmaker, opcional na simulação; sem ele aparece `<CONFIGURAR_CHANNEL_ID>`. |
 
-O `.env` não deve ser enviado ao Git. Nenhum token precisa ser configurado para usar a demonstração.
+Nenhum arquivo `.env` é necessário para iniciar a demonstração. Se precisar personalizar as variáveis, crie `.env` localmente; ele é ignorado pelo Git e não deve ser publicado. Nenhum token precisa ser configurado.
 
 ## 8. Como usar
 
