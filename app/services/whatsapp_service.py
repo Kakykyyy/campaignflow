@@ -1,10 +1,8 @@
-"""Preparação da chamada Botmaker (nunca há chamada externa de envio).
+"""Monta e registra requisições Botmaker v2 sem enviar chamadas externas.
 
-A documentação Botmaker v2 especifica Chat Actions → Send messages, channelId,
-contactId e header access-token; o caminho e payload exatos DEVEM ser
-confirmados pelo OpenAPI exportado de uma conta antes de reutilizar em produção.
-Como não foi possível confirmar o caminho no OpenAPI autenticado, registramos
-um marcador explícito, e nunca inventamos um endpoint como se fosse oficial.
+O endpoint, autenticação e corpo seguem o OpenAPI público da operação
+POST /chats-actions/send-messages. O token permanece apenas em memória durante
+a montagem e é removido dos cabeçalhos antes de persistir a simulação.
 """
 import os
 import re
@@ -15,8 +13,7 @@ from app.models.entities import ScheduledMessage, Simulation
 from app.services.clock import now, today
 from app.services.schedule_service import message_for
 
-# Identificador descritivo, NÃO uma URL HTTP: contrato pendente de validação oficial.
-ENDPOINT = 'NÃO VERIFICADO — Botmaker v2 / Chat Actions / Send messages'
+ENDPOINT = 'https://api.botmaker.com/v2.0/chats-actions/send-messages'
 
 def format_phone(phone: str, country='55') -> str:
     """Remove formatação e valida o número para o formato internacional E.164."""
@@ -35,13 +32,16 @@ def personalize(template: str, name: str) -> str:
     return template.replace('{nome}',first)
 
 def build_request(phone: str, content: str, channel_id: str | None = None):
-    """Monta o corpo da requisição para auditoria, sem usar token nem fazer POST."""
+    """Monta a requisição documentada para registro, sem fazer qualquer chamada HTTP."""
     channel_id = channel_id if channel_id is not None else os.getenv('BOTMAKER_CHANNEL_ID','')
     if not channel_id: channel_id = '<CONFIGURAR_CHANNEL_ID>'
-    payload = {'channelId':channel_id, 'contactId':format_phone(phone),
-               'message':{'text':content}}
-    # Cabeçalhos salváveis SEM credenciais, mesmo quando .env tem token verdadeiro.
-    headers = {'Content-Type':'application/json', 'access-token':'[OCULTO]'}
+    payload = {
+        'chat':{'channelId':channel_id, 'contactId':format_phone(phone)},
+        'messages':[{'text':content}],
+    }
+    # A credencial vem do ambiente; uma simulação continua possível sem token.
+    token = os.getenv('WHATSAPP_API_TOKEN') or '<CONFIGURAR WHATSAPP_API_TOKEN>'
+    headers = {'Content-Type':'application/json', 'access-token':token}
     return {'endpoint':ENDPOINT,'method':'POST','headers':headers,'body':payload}
 
 def simulate_today(session, run_date: date | None = None) -> tuple[int,int]:
@@ -71,10 +71,12 @@ def simulate_today(session, run_date: date | None = None) -> tuple[int,int]:
         except ValueError:
             failed+=1
             continue
+        # A credencial só existe na requisição em memória, nunca no histórico.
+        safe_headers = {**request['headers'], 'access-token':'[OCULTO]'}
         session.add(Simulation(scheduled_id=entry.id,customer_id=customer.id,
                                track=entry.track,number=entry.number,content=content,
                                simulated_at=now(),endpoint=request['endpoint'],
-                               method=request['method'],headers=request['headers'],
+                               method=request['method'],headers=safe_headers,
                                payload=request['body']))
         entry.status = 'SIMULADO'
         done += 1

@@ -18,17 +18,29 @@ def test_invalid_phones(raw):
 
 def test_personalization():assert personalize('Olá, {nome}!','Ana Silva')=='Olá, Ana!'
 
-def test_request_without_token_in_history(monkeypatch):
+def test_request_matches_botmaker_openapi_and_reads_token_from_environment(monkeypatch):
     monkeypatch.setenv('WHATSAPP_API_TOKEN','TOP-SECRET-VERY-PRIVATE')
     result=build_request('11999999999','Oi, Ana!','channel-1')
+    assert result['endpoint']=='https://api.botmaker.com/v2.0/chats-actions/send-messages'
     assert result['method']=='POST'
-    assert result['headers']['access-token']=='[OCULTO]'
-    assert result['body']['contactId']=='5511999999999'
-    assert 'TOP-SECRET' not in str(result)
+    assert result['headers']=={
+        'Content-Type':'application/json',
+        'access-token':'TOP-SECRET-VERY-PRIVATE',
+    }
+    assert result['body']=={
+        'chat':{'channelId':'channel-1','contactId':'5511999999999'},
+        'messages':[{'text':'Oi, Ana!'}],
+    }
+
+def test_request_without_token_uses_configuration_marker(monkeypatch):
+    monkeypatch.delenv('WHATSAPP_API_TOKEN',raising=False)
+    result=build_request('11999999999','Oi, Ana!','channel-1')
+    assert result['headers']['access-token']=='<CONFIGURAR WHATSAPP_API_TOKEN>'
 
 def test_simulation_idempotent_and_no_external_requests(db,sample_users,sample_carts,monkeypatch):
     def forbidden(*args,**kwargs):raise AssertionError('Nenhuma chamada externa permitida')
     import requests,httpx
+    monkeypatch.setenv('WHATSAPP_API_TOKEN','TOP-SECRET-VERY-PRIVATE')
     monkeypatch.setattr(requests,'post',forbidden)
     monkeypatch.setattr(httpx,'post',forbidden)
     consolidate(db,sample_users,sample_carts);db.commit()
@@ -43,7 +55,10 @@ def test_simulation_idempotent_and_no_external_requests(db,sample_users,sample_c
     assert len(simulations)==1
     assert simulations[0].content.startswith('Olá, Ana!')
     assert db.scalars(select(ScheduledMessage).where(ScheduledMessage.status=='SIMULADO')).all()
-    assert 'password' not in str(simulations[0].headers)
+    assert simulations[0].headers['access-token']=='[OCULTO]'
+    assert 'TOP-SECRET-VERY-PRIVATE' not in str(simulations[0].headers)
+    assert simulations[0].payload['chat']['contactId']=='5511999999999'
+    assert simulations[0].payload['messages'][0]['text']==simulations[0].content
 
 def test_invalid_phone_is_skipped(db,sample_users,sample_carts):
     sample_users[0]['phone']='foo'

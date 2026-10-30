@@ -37,7 +37,7 @@ Python 3.11+, FastAPI, SQLAlchemy, SQLite, Jinja2, HTTPX, pytest, python-dotenv,
 
 ## 5. Testes executados e resultados
 
-- `python -m pytest -q`: **45 testes aprovados**.
+- `python -m pytest -q`: **46 testes aprovados**.
 - `python -m compileall -q app scripts tests`: compilação concluída sem erros.
 - Smoke test com `TestClient` em `/`, `/clientes`, `/clientes/10001`, `/cronograma`, `/historico`, `/configuracoes`, `/docs`, `/health`, `/api/indicadores`: **todos retornaram HTTP 200**.
 - Testes HTTP externos foram simulados com mocks. **Não foi possível executar uma importação ao vivo** do DummyJSON neste ambiente, por indisponibilidade de acesso de rede de saída.
@@ -57,9 +57,8 @@ Abra `http://127.0.0.1:8000`. O README contém instruções de instalação para
 
 ## 7. O que falta para concluir literalmente 100% da especificação
 
-1. **Botmaker v2:** conferir o *path* e JSON da operação Chat Actions / Send messages no OpenAPI exportado da conta Botmaker. Na entrega, o campo endpoint é marcado explicitamente **NÃO VERIFICADO**, e não uma URL inventada; a estrutura final do fornecedor não foi validada. Nenhum envio real é permitido.
-2. **Importação ao vivo:** repetir a execução manual de extração com acesso à internet no computador do avaliador.
-3. **Homologação no navegador:** o HTML foi verificado com TestClient; a renderização em navegador gráfico real não foi executada aqui.
+1. **Importação ao vivo:** repetir a execução manual de extração com acesso à internet no computador do avaliador.
+2. **Homologação no navegador:** as telas principais têm capturas reais; ainda é recomendada uma revisão interativa completa dos fluxos.
 
 **Observação:** a aplicação não implementa login de operadores. Foi construída para uso local em teste; antes de hospedá-la publicamente, implementar autenticação, autorização, HTTPS, auditoria e proteção de rate limits.
 
@@ -77,9 +76,9 @@ Abra `http://127.0.0.1:8000`. O README contém instruções de instalação para
 | Cronograma sequencial de três mensagens | Implementado e testado |
 | Configuração do dia da semana | Implementado e testado |
 | Simulação de WhatsApp sem envio real | Implementado e testado |
-| Contrato exato da API Botmaker | **Pendente de validação oficial** |
+| Estrutura da simulação Botmaker conforme OpenAPI público | Implementado; envio real desabilitado |
 | Histórico técnico e token oculto | Implementado e testado |
 | Dashboard com dados do banco | Implementado e testado |
-| Testes automatizados | 45 aprovados |
+| Testes automatizados | 46 aprovados |
 | Docker, configuração local opcional por .env, CI e README | Implementado |
 | Repositório GitHub publicado | https://github.com/Kakykyyy/campaignflow |

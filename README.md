@@ -117,7 +117,7 @@ Acesse **http://127.0.0.1:8000**. Em Docker, o servidor está publicado para o h
 | --- | --- |
 | `DATABASE_URL` | URL do banco SQLite. Padrão sem `.env`: arquivo `data/campaignflow.db` do projeto. |
 | `SESSION_SECRET` | Segredo para assinar cookies de sessão/CSRF. Gere um valor longo antes de utilizar. |
-| `WHATSAPP_API_TOKEN` | Token da API Botmaker. **Não é utilizado para envios nem salvo em histórico**. Pode ficar vazio. |
+| `WHATSAPP_API_TOKEN` | Token de acesso Botmaker v2 lido do ambiente para montar a simulação. Nunca é enviado nem salvo no histórico; pode ficar vazio no modo offline. |
 | `BOTMAKER_CHANNEL_ID` | ID de canal da conta Botmaker, opcional na simulação; sem ele aparece `<CONFIGURAR_CHANNEL_ID>`. |
 
 Nenhum arquivo `.env` é necessário para iniciar a demonstração. Se precisar personalizar as variáveis, crie `.env` localmente; ele é ignorado pelo Git e não deve ser publicado. Nenhum token precisa ser configurado.
@@ -184,9 +184,14 @@ Documentação pública consultada:
 - [Como acessar a API Botmaker v2.0](https://help.botmaker.com/pt/help/8332500207456214277)
 - [Regras para templates fora da janela de 24h](https://help.botmaker.com/en/help/1569020665323141326)
 
-A documentação confirma a operação **Chat Actions → Send messages**, o cabeçalho `access-token` e o uso de `channelId` e `contactId` (telefone para WhatsApp quando disponível). Ela não expôs o contrato completo da operação no material público acessível durante esta execução. Por isso, o código **não inventa um caminho HTTP**: registra o identificador `NÃO VERIFICADO — Botmaker v2 / Chat Actions / Send messages` e uma estrutura provisória de corpo com `channelId`, `contactId` e `message.text`, para análise técnica offline.
+O request builder segue o contrato do [OpenAPI público Botmaker v2](https://api.botmaker.com/v2.0/openapi.json), operação `send-messages`:
 
-**Limitação explícita:** **o endpoint e o JSON exatos ainda precisam ser confrontados com o OpenAPI exportado no portal autenticado da Botmaker**. Não afirmamos que essa requisição foi validada no fornecedor nem implementamos envio ativo. O app NÃO faz `requests.post` ou `httpx.post` para a Botmaker: só monta e grava no SQLite. A configuração do token não altera isso. Por segurança, o histórico guarda sempre `[OCULTO]` em `access-token`, e a própria variável de ambiente nunca é impressa.
+- **Endpoint:** `POST https://api.botmaker.com/v2.0/chats-actions/send-messages`
+- **Autenticação:** header `access-token`, lido de `WHATSAPP_API_TOKEN`.
+- **Content-Type:** `application/json`.
+- **Corpo:** `{ "chat": { "channelId": "...", "contactId": "..." }, "messages": [{ "text": "..." }] }`.
+
+O schema define `chat` usando `channelId` e `contactId` (ou, alternativamente, `chatId`) e uma lista de mensagens com `text`. A aplicação monta essa estrutura e a grava para inspeção, mas **não faz POST nem qualquer chamada à Botmaker**, conforme o requisito de simulação. O token é usado somente em memória ao montar o header e substituído por `[OCULTO]` antes de persistir; sem token configurado a simulação offline continua funcionando e o header em memória contém um marcador de configuração, não uma credencial válida.
 
 **WhatsApp em produção:** mensagens livres geralmente dependem de conversa ativa (janela de atendimento); fora dela é preciso usar templates aprovados. O teste não tenta contornar essa política. Os números do DummyJSON são internacionais e fictícios; o simulador formata os números para dígitos com DDI, mas não os valida contra a rede WhatsApp.
 
@@ -199,7 +204,7 @@ A documentação confirma a operação **Chat Actions → Send messages**, o cab
 - Não existe job de envio automático: **simular hoje é uma ação manual**, conforme solicitado. Agendamentos são calculados em hora local de São Paulo.
 - Alterações nas campanhas e mudanças de aprovação preservam simulações antigas; mensagens antigas pendentes são reprogramadas conforme o estado atual. Para auditoria em produção, implantar histórico das alterações de aprovação e versionamento de campanhas.
 - `DummyJSON` não representa compras reais nem consentimento para marketing. A solução nunca envia mensagens a esses contatos.
-- O caminho Botmaker v2 é deliberadamente registrado como **não verificado**, e a estrutura provisória do JSON requer validação no OpenAPI exportado. Essa é a principal pendência para aderência literal ao requisito de correspondência exata da API.
+- O formato do request Botmaker v2 segue o OpenAPI público. O envio permanece deliberadamente desabilitado; para uma integração real, ainda seria necessário validar credenciais, canal, consentimento e políticas de mensagens da conta.
 - Recomendado: adicionar migrações Alembic para alterações futuras de esquema, observabilidade e suíte end-to-end com navegador real.
 
 ## 14. Publicação no GitHub
