@@ -42,6 +42,7 @@ campaignflow/
 │   │   └── message_seed.py             # 15 mensagens do enunciado
 │   ├── templates/                      # Jinja2 SSR
 │   └── static/css, static/js/          # Visual responsivo e confirmação
+├── docs/screenshots/                   # Capturas reais da aplicação em execução
 ├── tests/                              # Testes automatizados com mocks
 ├── scripts/seed_demo.py                # Exemplo local opcional
 ├── data/raw/.gitkeep                   # JSONs gerados são ignorados pelo Git
@@ -52,6 +53,26 @@ campaignflow/
 ├── requirements.txt
 └── README.md
 ```
+
+## Capturas da aplicação
+
+Imagens capturadas com a aplicação rodando localmente no navegador, usando a interface real e os dados de teste da DummyJSON. Não são mockups.
+
+### Visão geral
+
+![Painel de visão geral do CampaignFlow](docs/screenshots/dashboard.png)
+
+### Clientes
+
+![Lista de clientes, filtros e trilhas sugeridas](docs/screenshots/clientes.png)
+
+### Cronograma
+
+![Cronograma semanal com mensagens em modo de simulação](docs/screenshots/cronograma.png)
+
+### Configurações
+
+![Configuração do dia semanal e políticas de segurança](docs/screenshots/configuracoes.png)
 
 ## 4. Pré-requisitos
 
