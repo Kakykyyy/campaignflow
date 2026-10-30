@@ -11,6 +11,7 @@ from app.database import Base, engine, SessionLocal
 from app import models  # noqa
 from app.models import entities  # noqa: F401
 from app.services.message_seed import seed
+from app.services.whatsapp_service import migrate_legacy_simulations
 from app.routers.pages import router
 
 logging.basicConfig(level=logging.INFO,format='%(asctime)s %(levelname)s %(name)s: %(message)s')
@@ -21,7 +22,11 @@ async def lifespan(app: FastAPI):
     # Cria as tabelas declaradas nos modelos sem apagar dados existentes.
     Base.metadata.create_all(bind=engine)
     # Garante que as mensagens padrão existam antes de atender requisições.
-    with SessionLocal() as db: seed(db)
+    with SessionLocal() as db:
+        seed(db)
+        # Converte somente metadados legados, sem alterar mensagens ou enviar nada.
+        if migrate_legacy_simulations(db):
+            db.commit()
     yield
 
 # O lifespan centraliza tarefas de inicialização e encerramento da aplicação.

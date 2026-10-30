@@ -193,6 +193,8 @@ O request builder segue o contrato do [OpenAPI público Botmaker v2](https://api
 
 O schema define `chat` usando `channelId` e `contactId` (ou, alternativamente, `chatId`) e uma lista de mensagens com `text`. A aplicação monta essa estrutura e a grava para inspeção, mas **não faz POST nem qualquer chamada à Botmaker**, conforme o requisito de simulação. O token é usado somente em memória ao montar o header e substituído por `[OCULTO]` antes de persistir; sem token configurado a simulação offline continua funcionando e o header em memória contém um marcador de configuração, não uma credencial válida.
 
+Ao iniciar, registros de simulação criados por versões anteriores são migrados para o formato atual do request. A migração altera apenas endpoint, payload e redaction do header; preserva cliente, mensagem, data e status, sem enviar chamadas.
+
 **WhatsApp em produção:** mensagens livres geralmente dependem de conversa ativa (janela de atendimento); fora dela é preciso usar templates aprovados. O teste não tenta contornar essa política. Os números do DummyJSON são internacionais e fictícios; o simulador formata os números para dígitos com DDI, mas não os valida contra a rede WhatsApp.
 
 ## 13. Segurança, limitações conhecidas e próximos passos

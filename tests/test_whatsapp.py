@@ -1,11 +1,19 @@
 """Confere formatação e personalização sem permitir chamadas de envio externas."""
-from datetime import date
+from datetime import date, datetime
 from sqlalchemy import select
 import pytest
 from app.models.entities import Customer,ScheduledMessage,Simulation
 from app.services.customer_service import consolidate
 from app.services.schedule_service import approve_customer
-from app.services.whatsapp_service import format_phone, personalize,build_request,simulate_today
+from app.services.whatsapp_service import (
+    ENDPOINT,
+    LEGACY_ENDPOINT,
+    build_request,
+    format_phone,
+    migrate_legacy_simulations,
+    personalize,
+    simulate_today,
+)
 
 @pytest.mark.parametrize('raw,expected',[
     ('11999999999','5511999999999'),('(11) 99999-9999','5511999999999'),
@@ -36,6 +44,53 @@ def test_request_without_token_uses_configuration_marker(monkeypatch):
     monkeypatch.delenv('WHATSAPP_API_TOKEN',raising=False)
     result=build_request('11999999999','Oi, Ana!','channel-1')
     assert result['headers']['access-token']=='<CONFIGURAR WHATSAPP_API_TOKEN>'
+
+def test_legacy_simulation_metadata_is_migrated_without_changing_history(db):
+    db.add(Customer(id=1,name='Ana Silva',age=30))
+    db.add(ScheduledMessage(
+        id=1,
+        customer_id=1,
+        track='INCENTIVO',
+        number=1,
+        scheduled_date=date(2026,11,2),
+        status='SIMULADO',
+    ))
+    db.flush()
+    simulation=Simulation(
+        scheduled_id=1,
+        customer_id=1,
+        track='INCENTIVO',
+        number=1,
+        content='Oi, Ana!',
+        simulated_at=datetime(2026,10,30,12,0,0),
+        endpoint=LEGACY_ENDPOINT,
+        method='POST',
+        headers={'Content-Type':'application/json','access-token':'[OCULTO]'},
+        payload={
+            'channelId':'channel-1',
+            'contactId':'5511999999999',
+            'message':{'text':'Oi, Ana!'},
+        },
+        status='SIMULADO',
+    )
+    db.add(simulation)
+    db.flush()
+    simulation_id=simulation.id
+    original_timestamp=simulation.simulated_at
+
+    assert migrate_legacy_simulations(db)==1
+    db.flush()
+    migrated=db.get(Simulation,simulation_id)
+    assert migrated.endpoint==ENDPOINT
+    assert migrated.payload=={
+        'chat':{'channelId':'channel-1','contactId':'5511999999999'},
+        'messages':[{'text':'Oi, Ana!'}],
+    }
+    assert migrated.content=='Oi, Ana!'
+    assert migrated.simulated_at==original_timestamp
+    assert migrated.status=='SIMULADO'
+    assert migrated.headers['access-token']=='[OCULTO]'
+    assert migrate_legacy_simulations(db)==0
 
 def test_simulation_idempotent_and_no_external_requests(db,sample_users,sample_carts,monkeypatch):
     def forbidden(*args,**kwargs):raise AssertionError('Nenhuma chamada externa permitida')

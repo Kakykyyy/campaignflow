@@ -37,7 +37,7 @@ Python 3.11+, FastAPI, SQLAlchemy, SQLite, Jinja2, HTTPX, pytest, python-dotenv,
 
 ## 5. Testes executados e resultados
 
-- `python -m pytest -q`: **46 testes aprovados**.
+- `python -m pytest -q`: **47 testes aprovados**.
 - `python -m compileall -q app scripts tests`: compilação concluída sem erros.
 - Smoke test com `TestClient` em `/`, `/clientes`, `/clientes/10001`, `/cronograma`, `/historico`, `/configuracoes`, `/docs`, `/health`, `/api/indicadores`: **todos retornaram HTTP 200**.
 - Testes HTTP externos foram simulados com mocks. **Não foi possível executar uma importação ao vivo** do DummyJSON neste ambiente, por indisponibilidade de acesso de rede de saída.
@@ -79,6 +79,6 @@ Abra `http://127.0.0.1:8000`. O README contém instruções de instalação para
 | Estrutura da simulação Botmaker conforme OpenAPI público | Implementado; envio real desabilitado |
 | Histórico técnico e token oculto | Implementado e testado |
 | Dashboard com dados do banco | Implementado e testado |
-| Testes automatizados | 46 aprovados |
+| Testes automatizados | 47 aprovados |
 | Docker, configuração local opcional por .env, CI e README | Implementado |
 | Repositório GitHub publicado | https://github.com/Kakykyyy/campaignflow |

@@ -8,12 +8,41 @@ import os
 import re
 from datetime import date
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
 from app.models.entities import ScheduledMessage, Simulation
 from app.services.clock import now, today
 from app.services.schedule_service import message_for
 
 ENDPOINT = 'https://api.botmaker.com/v2.0/chats-actions/send-messages'
+LEGACY_ENDPOINT = 'NÃO VERIFICADO — Botmaker v2 / Chat Actions / Send messages'
+
+def migrate_legacy_simulations(session) -> int:
+    """Atualiza metadados de simulações antigas para o contrato documentado atual.
+
+    Preserva cliente, mensagem, data e status. Nenhuma chamada HTTP é feita.
+    """
+    legacy_rows = session.scalars(
+        select(Simulation).where(Simulation.endpoint == LEGACY_ENDPOINT)
+    ).all()
+    migrated = 0
+    for row in legacy_rows:
+        old_payload = row.payload
+        old_message = old_payload.get('message') if isinstance(old_payload, dict) else None
+        if not isinstance(old_payload, dict) or not isinstance(old_message, dict):
+            raise ValueError(f'Payload legado inválido na simulação {row.id}.')
+        channel_id = old_payload.get('channelId')
+        contact_id = old_payload.get('contactId')
+        text = old_message.get('text')
+        if not all(isinstance(value, str) and value for value in (channel_id, contact_id, text)):
+            raise ValueError(f'Campos incompletos no payload da simulação {row.id}.')
+
+        row.endpoint = ENDPOINT
+        row.payload = {
+            'chat': {'channelId': channel_id, 'contactId': contact_id},
+            'messages': [{'text': text}],
+        }
+        row.headers = {**row.headers, 'access-token': '[OCULTO]'}
+        migrated += 1
+    return migrated
 
 def format_phone(phone: str, country='55') -> str:
     """Remove formatação e valida o número para o formato internacional E.164."""
