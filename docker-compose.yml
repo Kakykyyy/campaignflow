@@ -1,0 +1,15 @@
+services:
+  campaignflow:
+    # Constrói a imagem localmente e publica a aplicação na porta 8000 do host.
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mantém banco e arquivos de importação fora do container descartável.
+      - ./data:/srv/campaignflow/data
+    # O arquivo .env é opcional; DATABASE_URL aponta para o volume montado.
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - DATABASE_URL=sqlite:////srv/campaignflow/data/campaignflow.db

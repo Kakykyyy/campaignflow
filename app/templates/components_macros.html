@@ -1,0 +1,12 @@
+{# Macros reutilizáveis evitam repetir a mesma marcação visual nas telas. #}
+{% macro pill(track) -%}
+{# A classe varia conforme a trilha para distinguir segmentos por cor. #}
+<span class="track-pill {% if track=='ALTO VALOR' %}track-high{% elif track=='COMPRA EM QUANTIDADE' %}track-volume{% elif track=='INCENTIVO' %}track-incentive{% elif track=='PÚBLICO JOVEM' %}track-young{% else %}track-general{% endif %}">{{track}}</span>
+{%- endmacro %}
+{# Os status são apresentados consistentemente em listas e detalhes. #}
+{% macro approval(approved) -%}
+{% if approved %}<span class="status-pill success"><i class="bi bi-check-circle-fill"></i> Aprovado</span>{% else %}<span class="status-pill pending"><i class="bi bi-clock"></i> Pendente</span>{% endif %}
+{%- endmacro %}
+{% macro status(state) -%}
+{% if state=='SIMULADO' %}<span class="status-pill success">Simulado</span>{% else %}<span class="status-pill pending">Pendente</span>{% endif %}
+{%- endmacro %}
