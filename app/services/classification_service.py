@@ -1,4 +1,4 @@
-"""Classificação exclusiva por prioridade; GERAL só quando nenhuma regra anterior se aplica."""
+"""Classificação automática em múltiplas trilhas ordenadas por prioridade."""
 from decimal import Decimal
 from app.models.entities import Customer, Suggestion
 
@@ -11,17 +11,20 @@ def br_money(value):
     return 'R$ ' + f'{Decimal(str(value)):,.2f}'.replace(',','X').replace('.',',').replace('X','.')
 
 def classify(total: Decimal, items: int, age: int) -> list[tuple[str,str]]:
-    """Retorna somente a trilha de maior prioridade aplicável ao cliente."""
+    """Retorna todas as trilhas aplicáveis; GERAL só se nenhuma outra regra casar."""
     total = Decimal(str(total))
+    matches = []
     if total >= Decimal('10000'):
-        return [('ALTO VALOR', f'Valor total {br_money(total)} é maior ou igual a R$ 10.000,00.')]
+        matches.append(('ALTO VALOR', f'Valor total {br_money(total)} é maior ou igual a R$ 10.000,00.'))
     if items >= 15:
-        return [('COMPRA EM QUANTIDADE', f'Cliente comprou {items} itens, atingindo o mínimo de 15.')]
+        matches.append(('COMPRA EM QUANTIDADE', f'Cliente comprou {items} itens, atingindo o mínimo de 15.'))
     if total < Decimal('1000'):
-        return [('INCENTIVO', f'Valor total de compras {br_money(total)} é inferior a R$ 1.000,00.')]
+        matches.append(('INCENTIVO', f'Valor total de compras {br_money(total)} é inferior a R$ 1.000,00.'))
     if age < 30:
-        return [('PÚBLICO JOVEM', f'Cliente possui {age} anos, idade inferior a 30 anos.')]
-    return [('GERAL', 'Cliente não atende aos critérios das outras quatro trilhas.')]
+        matches.append(('PÚBLICO JOVEM', f'Cliente possui {age} anos, idade inferior a 30 anos.'))
+    if not matches:
+        matches.append(('GERAL', 'Cliente não atende aos critérios das outras quatro trilhas.'))
+    return matches
 
 def reclassify(session, customer: Customer):
     """Substitui sugestões antigas e registra a data da nova classificação."""

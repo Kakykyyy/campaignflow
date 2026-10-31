@@ -1,10 +1,16 @@
-{% extends 'base.html' %}{% from 'components_macros.html' import pill,approval %}
+{% extends 'base.html' %}{% from 'components_macros.html' import pill,approval,status %}
 {# Reúne dados consolidados, recomendações automáticas e confirmação humana. #}
 {% block crumb %}Clientes / Detalhes{% endblock %}
 {% block content %}
 <a class="back-link" href="/clientes"><i class="bi bi-arrow-left me-2"></i>Voltar para clientes</a>
 <div class="page-heading"><div><div class="eyebrow">PERFIL DO CLIENTE #{{customer.id}}</div><h1>{{customer.name}}</h1><p>{{customer.state or 'Estado não informado'}} · {{customer.age}} anos · {{customer.phone}}</p></div>{{approval(customer.approved)}}</div>
 <div class="detail-metrics"><div class="detail-metric"><span>Valor total comprado</span><strong>{{customer.total|money}}</strong></div><div class="detail-metric"><span>Quantidade de itens</span><strong>{{customer.item_count}}</strong></div><div class="detail-metric"><span>Carrinhos associados</span><strong>{{customer.carts|length}}</strong></div><div class="detail-metric"><span>Mensagens simuladas</span><strong>{{sent}}</strong></div></div>
+{% if timeline %}<section class="panel mt-4"><div class="panel-head"><div><h2>Jornada da campanha</h2><p>Progresso calculado a partir das mensagens persistidas no cronograma.</p></div><i class="bi bi-signpost-2 text-muted"></i></div><div class="panel-content">
+<div class="row g-3 mb-3"><div class="col-md-3"><span class="subtitle">TRILHA ATUAL</span><strong class="d-block">{{current_track or '—'}}</strong></div><div class="col-md-3"><span class="subtitle">SEMANA ATUAL</span><strong class="d-block">{% if next_message %}{{current_week}} de {{timeline|length}}{% else %}Concluída{% endif %}</strong></div><div class="col-md-3"><span class="subtitle">PRÓXIMA MENSAGEM</span><strong class="d-block">{% if next_message %}{{next_message.track}} · {{next_message.number}}/3{% else %}Nenhuma pendente{% endif %}</strong></div><div class="col-md-3"><span class="subtitle">CONCLUSÃO PREVISTA</span><strong class="d-block">{{planned_finish.strftime('%d/%m/%Y') if planned_finish else '—'}}</strong></div></div>
+<div class="progress mb-3" role="progressbar" aria-label="Progresso da campanha" aria-valuenow="{{progress}}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width:{{progress}}%">{{progress}}%</div></div>
+<p>{% if next_track %}<strong>Próxima trilha:</strong> {{next_track}}{% elif current_track %}<strong>Próxima trilha:</strong> Nenhuma{% endif %}</p>
+<div class="list-group">{% for row in timeline %}<div class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2"><div><strong>{{row.scheduled_date.strftime('%d/%m/%Y')}}</strong> · {{row.track}} · Mensagem {{row.number}} de 3<div class="subtitle">{{contents.get((row.track,row.number),'—')|replace('{nome}',customer.name.split()[0])}}</div></div>{{status(row.status)}}</div>{% endfor %}</div>
+</div></section>{% endif %}
 <div class="layout-two mt-4"><section class="panel"><div class="panel-head"><div><h2>Validação das trilhas</h2><p>Marque todas as trilhas que devem compor a campanha.</p></div><i class="bi bi-check2-square text-muted"></i></div><div class="panel-content">
 {# Só é possível aprovar após classificar; a seleção pode incluir trilhas manuais. #}
 {% if customer.classified_at %}<form method="post" action="/clientes/{{customer.id}}/aprovar" data-confirm="Confirmar estas trilhas e (re)gerar o cronograma deste cliente?"><input type="hidden" name="csrf_token" value="{{csrf}}">
