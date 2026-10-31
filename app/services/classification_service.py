@@ -1,4 +1,4 @@
-"""Classificação pura: múltiplas trilhas, GERAL somente se nenhuma condição."""
+"""Classificação exclusiva por prioridade; GERAL só quando nenhuma regra anterior se aplica."""
 from decimal import Decimal
 from app.models.entities import Customer, Suggestion
 
@@ -11,22 +11,17 @@ def br_money(value):
     return 'R$ ' + f'{Decimal(str(value)):,.2f}'.replace(',','X').replace('.',',').replace('X','.')
 
 def classify(total: Decimal, items: int, age: int) -> list[tuple[str,str]]:
-    """Aplica todas as regras; o cliente pode pertencer a várias trilhas."""
+    """Retorna somente a trilha de maior prioridade aplicável ao cliente."""
     total = Decimal(str(total))
-    matches = []
-    # Cada condição é independente para permitir múltiplas recomendações.
     if total >= Decimal('10000'):
-        matches.append(('ALTO VALOR', f'Valor total {br_money(total)} é maior ou igual a R$ 10.000,00.'))
+        return [('ALTO VALOR', f'Valor total {br_money(total)} é maior ou igual a R$ 10.000,00.')]
     if items >= 15:
-        matches.append(('COMPRA EM QUANTIDADE', f'Cliente comprou {items} itens, atingindo o mínimo de 15.'))
+        return [('COMPRA EM QUANTIDADE', f'Cliente comprou {items} itens, atingindo o mínimo de 15.')]
     if total < Decimal('1000'):
-        matches.append(('INCENTIVO', f'Valor total de compras {br_money(total)} é inferior a R$ 1.000,00.'))
+        return [('INCENTIVO', f'Valor total de compras {br_money(total)} é inferior a R$ 1.000,00.')]
     if age < 30:
-        matches.append(('PÚBLICO JOVEM', f'Cliente possui {age} anos, idade inferior a 30 anos.'))
-    if not matches:
-        # A trilha geral só é usada quando nenhuma outra regra foi atendida.
-        matches.append(('GERAL', 'Cliente não atende aos critérios das outras quatro trilhas.'))
-    return matches
+        return [('PÚBLICO JOVEM', f'Cliente possui {age} anos, idade inferior a 30 anos.')]
+    return [('GERAL', 'Cliente não atende aos critérios das outras quatro trilhas.')]
 
 def reclassify(session, customer: Customer):
     """Substitui sugestões antigas e registra a data da nova classificação."""

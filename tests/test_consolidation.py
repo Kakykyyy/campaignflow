@@ -13,7 +13,7 @@ def test_sums_and_zero(db,sample_users,sample_carts):
     assert ana.total==Decimal('10500.00')
     assert ana.item_count==16
     assert len(ana.carts)==2
-    assert [s.track for s in ana.suggestions]==['ALTO VALOR','COMPRA EM QUANTIDADE','PÚBLICO JOVEM']
+    assert [s.track for s in ana.suggestions]==['ALTO VALOR']
     carla=db.get(Customer,3)
     assert carla.total==Decimal('0.00') and carla.item_count==0
     assert [s.track for s in carla.suggestions]==['INCENTIVO']

@@ -12,7 +12,7 @@ Projeto de teste técnico para a vaga de Desenvolvedor Júnior (Automações e I
 - Armazena os registros de resposta da API em arquivos JSON de extração únicos, em `data/raw/AAAA-MM-DD/`.
 - Consolida clientes, carrinhos e produtos em banco SQLite, em transação; armazena valores monetários com `Decimal`/`Numeric(14,2)` e soma a **quantidade de unidades** dos produtos, não a de SKUs.
 - Mantém clientes sem compras com total R$ 0,00 e 0 itens; evita duplicação por IDs únicos.
-- Classifica nas trilhas **Alto valor**, **Compra em quantidade**, **Incentivo**, **Público jovem** e **Geral**, com prioridade, múltiplas participações e justificativas.
+- Classifica cada cliente em uma única trilha, escolhendo a primeira regra aplicável pela prioridade do enunciado; permite revisão e inclusão manual de outras trilhas.
 - Permite revisar, adicionar, remover e confirmar manualmente trilhas em cada perfil.
 - Gera, **só após aprovação**, três mensagens semanais por trilha, em ordem de prioridade e nunca duas simultâneas para o mesmo cliente.
 - Permite selecionar o dia semanal e reagenda mensagens pendentes, preservando as que já foram simuladas.
@@ -131,7 +131,7 @@ Nenhum arquivo `.env` é necessário para iniciar a demonstração. Se precisar 
 5. Em **Cronograma**, confira todas as mensagens na sequência. Utilize **SIMULAR ENVIOS DE HOJE** quando houver mensagens pendentes para a data atual.
 6. Abra **Histórico de envios**, clique nos detalhes e consulte endpoint de referência, método, cabeçalhos ocultos e corpo JSON.
 
-Cada um dos cinco segmentos tem exatamente três mensagens, armazenadas em `campaign_messages`. O cliente pode estar em várias trilhas; **Geral** é usada exclusivamente na ausência das outras condições. O cronograma sempre utiliza a ordem de prioridade definida no teste.
+Cada um dos cinco segmentos tem exatamente três mensagens, armazenadas em `campaign_messages`. A classificação automática seleciona somente a primeira regra aplicável pela prioridade do enunciado; **Geral** é usada exclusivamente na ausência das outras condições. O operador ainda pode confirmar ou incluir manualmente outras trilhas. O cronograma sempre utiliza a ordem de prioridade definida no teste.
 
 ### Carga demonstrativa opcional, sem APIs externas
 
@@ -147,7 +147,7 @@ Adiciona três clientes de exemplo, com IDs próprios distintos da DummyJSON e c
 python -m pytest -q
 ```
 
-Cobertura de cenários: paginação completa, falhas HTTP, JSON inválido, arquivo não sobrescrito, deduplicação, valores e quantidades, zero compras, todas as classificações, múltiplas trilhas, motivos e ordem, alterações com nova aprovação, aprovação e inclusão manual, reagendamento, sequência sem sobreposição, personalização, telefone, montagem HTTP com token redigido, dupla simulação bloqueada, proibição de POST, telas e CSRF.
+Cobertura de cenários: paginação completa, falhas HTTP, JSON inválido, arquivo não sobrescrito, deduplicação, valores e quantidades, zero compras, limites e prioridade exclusiva das classificações, motivos, alterações com nova aprovação, aprovação e inclusão manual de trilhas, reagendamento, sequência sem sobreposição, personalização, telefone, montagem HTTP com token redigido, dupla simulação bloqueada, proibição de POST, telas e CSRF.
 
 Testes de extração usam `httpx.MockTransport`: **não acessam** DummyJSON nem Botmaker. O workflow de CI executa os testes no GitHub Actions a cada push/PR.
 

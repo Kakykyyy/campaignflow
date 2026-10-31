@@ -10,7 +10,7 @@
 
 - Importação paginada de todos os clientes e carrinhos do DummyJSON, com validação, timeout, logs e arquivos JSON únicos por execução.
 - Consolidação transacional em SQLite, relacionamento por `userId`, arredondamento monetário decimal e somatório de quantidades efetivas.
-- Classificação automática reproduzível, com motivos em português e suporte a várias trilhas por cliente.
+- Classificação automática reproduzível e exclusiva pela prioridade do enunciado, com motivos em português; trilhas adicionais podem ser aprovadas manualmente.
 - Confirmação manual de trilhas, inclusão/remoção, revogação e persistência da aprovação.
 - Cronograma semanal configurável, três etapas por trilha e ausência de trilhas simultâneas.
 - Simulação local de mensagens previstas para hoje, com personalização do primeiro nome, formatação de número e proteção por unicidade no banco.
@@ -73,7 +73,7 @@ As validações funcionais pendentes de extração ao vivo e revisão visual for
 | Extração paginada completa | Implementado, testado com mocks e validado ao vivo (208 clientes e 208 carrinhos) |
 | Backup bruto JSON com timestamps únicos | Implementado, testado e validado; arquivos locais ignorados pelo Git |
 | Consolidação de carrinhos e clientes | Implementado, testado e validado ao vivo no SQLite |
-| Classificação com prioridade e múltiplas trilhas | Implementado e testado |
+| Classificação exclusiva por prioridade; inclusão manual de trilhas adicionais | Implementado e testado |
 | Aprovação manual e persistência | Implementado e testado |
 | Cronograma sequencial de três mensagens | Implementado e testado |
 | Configuração do dia da semana | Implementado e testado |
