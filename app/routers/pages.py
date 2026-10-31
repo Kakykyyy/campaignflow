@@ -57,9 +57,10 @@ def dashboard(request:Request,db:Session=Depends(get_db)):
     simulated=db.scalar(select(func.count(Simulation.id))) or 0
     distribution={track:db.scalar(select(func.count(Suggestion.id)).where(Suggestion.track==track)) or 0 for track in TRACKS}
     upcoming=db.scalars(schedule_query().where(ScheduledMessage.status=='PENDENTE',ScheduledMessage.scheduled_date>=today()).limit(8)).all()
+    last_import=db.scalar(select(ImportRun).order_by(ImportRun.created_at.desc(),ImportRun.id.desc()).limit(1))
     return render(request,'dashboard.html',active='dashboard',total=total,classified=classified,
                   approved=approved,pending=total-approved,tracks_count=tracks,today_count=today_count,
-                  simulated=simulated,distribution=distribution,upcoming=upcoming)
+                  simulated=simulated,distribution=distribution,upcoming=upcoming,last_import=last_import)
 
 @router.post('/import',include_in_schema=False)
 def import_now(request:Request,csrf_token:str=Form(...),db:Session=Depends(get_db)):

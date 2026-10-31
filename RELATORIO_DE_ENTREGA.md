@@ -16,6 +16,7 @@
 - Simulação local de mensagens previstas para hoje, com personalização do primeiro nome, formatação de número e proteção por unicidade no banco.
 - Histórico detalhado de cada simulação, incluindo cabeçalhos redigidos e corpo JSON.
 - Dashboard com indicadores reais, gráficos CSS, filtros, pesquisa e layout responsivo.
+- Dashboard mostra a data e o volume da extração concluída mais recente.
 - API FastAPI de consulta, documentação Swagger, script opcional de demonstração, Docker e GitHub Actions.
 
 ## 2. Estrutura final

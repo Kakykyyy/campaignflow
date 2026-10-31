@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 from app.main import app
 from app.database import get_db
 from app.services.customer_service import consolidate
-from app.models.entities import Customer
+from app.models.entities import Customer, ImportRun
 from app.services.schedule_service import approve_customer
 
 def client_for(db):
@@ -14,10 +14,16 @@ def client_for(db):
 
 def test_dashboard_and_routes(db,sample_users,sample_carts):
     consolidate(db,sample_users,sample_carts);db.commit()
+    db.add(ImportRun(users=3,carts=3,user_file='users.json',cart_file='carts.json'))
+    db.commit()
     with client_for(db) as client:
         for url in ('/','/clientes','/clientes/1','/cronograma','/historico','/configuracoes','/health','/api/indicadores','/docs'):
             response=client.get(url)
             assert response.status_code==200,(url,response.text[:300])
+        dashboard=client.get('/').text
+        assert 'Última extração' in dashboard
+        assert 'users.json' not in dashboard
+        assert 'CONCLUÍDA EM' in dashboard
         assert 'Ana Silva' in client.get('/clientes').text
         assert '3' == str(client.get('/api/indicadores').json()['clientes'])
     app.dependency_overrides.clear()

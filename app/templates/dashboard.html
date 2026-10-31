@@ -15,6 +15,10 @@
   <div class="metric-card"><div class="metric-top"><span>Mensagens simuladas</span><span class="metric-icon green"><i class="bi bi-send-check"></i></span></div><div class="metric-number">{{simulated}}</div><div class="metric-foot">Sem envios externos</div></div>
   <div class="metric-card accent-card"><div class="metric-top"><span>Atalhos operacionais</span><span class="metric-icon blue"><i class="bi bi-lightning-charge"></i></span></div><div class="shortcut-links"><a href="/clientes">Validar clientes <i class="bi bi-arrow-right"></i></a><a href="/cronograma">Ver cronograma <i class="bi bi-arrow-right"></i></a><form action="/simulate" method="post" data-confirm="Simular somente os envios de hoje, sem mensagens reais?"><input type="hidden" name="csrf_token" value="{{csrf}}"><button type="submit" class="btn btn-link p-0" style="font-size:12px;text-decoration:none">Simular envios de hoje <i class="bi bi-arrow-right"></i></button></form></div></div>
 </div>
+<section class="panel mt-4"><div class="panel-head"><div><h2>Última extração</h2><p>Registro da atualização concluída mais recente</p></div><i class="bi bi-cloud-check text-muted"></i></div><div class="panel-content">
+{% if last_import %}<div class="row g-3"><div class="col-md-4"><span class="subtitle">CONCLUÍDA EM</span><strong class="d-block">{{last_import.created_at.strftime('%d/%m/%Y às %H:%M')}}</strong></div><div class="col-md-4"><span class="subtitle">CLIENTES</span><strong class="d-block">{{last_import.users}}</strong></div><div class="col-md-4"><span class="subtitle">CARRINHOS</span><strong class="d-block">{{last_import.carts}}</strong></div></div>
+{% else %}<p class="mb-0">Nenhuma extração concluída foi registrada. Use <strong>Nova extração</strong> para carregar os dados do DummyJSON.</p>{% endif %}
+</div></section>
 <div class="layout-two mt-4">
 {# As barras e o gráfico usam os valores entregues pela rota do dashboard. #}
 <section class="panel"><div class="panel-head"><div><h2>Distribuição por trilha</h2><p>Classificações sugeridas automaticamente</p></div><i class="bi bi-bar-chart text-muted"></i></div><div class="panel-content">

@@ -17,7 +17,7 @@ Projeto de teste técnico para a vaga de Desenvolvedor Júnior (Automações e I
 - Gera, **só após aprovação**, três mensagens semanais por trilha, em ordem de prioridade e nunca duas simultâneas para o mesmo cliente.
 - Permite selecionar o dia semanal e reagenda mensagens pendentes, preservando as que já foram simuladas.
 - Monta e armazena uma **simulação** para mensagens previstas para a data atual, sem qualquer POST para WhatsApp e sem gravar token.
-- Exibe painel com números reais do SQLite, distribuição de trilhas, aprovações, clientes, cronograma e detalhes técnicos de cada simulação.
+- Exibe painel com números reais do SQLite, distribuição de trilhas, aprovações, clientes, cronograma, data e volume da última extração concluída e detalhes técnicos de cada simulação.
 
 ## 2. Tecnologias
 
